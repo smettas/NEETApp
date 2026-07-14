@@ -1,3 +1,4 @@
+import re
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -5,71 +6,87 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from .models import StudentProfile
 from .models import StudentProfile, Enquiry
+
+MOBILE_REGEX = re.compile(r'^[6-9]\d{9}$')
+
+
+def _profile_payload(user, profile):
+    return {
+        'id': user.id,
+        'name': user.get_full_name(),
+        'roll_number': profile.roll_number,
+        'mobile': profile.mobile,
+        'gender': profile.gender,
+        'blood_group': profile.blood_group,
+        'studying': profile.current_class,
+        'address': profile.address,
+    }
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
     data = request.data
     try:
-        # Check if email exists
-        if User.objects.filter(email=data.get('email')).exists():
+        mobile = (data.get('mobile') or '').strip()
+        roll_number = (data.get('roll_number') or '').strip()
+        password = data.get('password') or ''
+        first_name = (data.get('first_name') or '').strip()
+
+        if not mobile or not MOBILE_REGEX.match(mobile):
             return Response(
-                {'error': 'Email already registered'},
+                {'error': 'Enter a valid 10 digit mobile number'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        # Check if mobile exists
-        if StudentProfile.objects.filter(mobile=data.get('mobile')).exists():
+
+        if not roll_number:
+            return Response(
+                {'error': 'Roll Number is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not password or len(password) < 6:
+            return Response(
+                {'error': 'Password must be at least 6 characters'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not first_name:
+            return Response(
+                {'error': 'First Name is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Mobile doubles as the Django username
+        if User.objects.filter(username=mobile).exists():
             return Response(
                 {'error': 'Mobile number already registered'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Create User
-        user = User.objects.create_user(
-            username=data.get('email'),
-            email=data.get('email'),
-            password=data.get('password'),
-            first_name=data.get('firstName', ''),
-            last_name=data.get('lastName', ''),
-        )
+        if StudentProfile.objects.filter(roll_number=roll_number).exists():
+            return Response(
+                {'error': 'Roll Number already registered'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # Generate roll number
-        count = StudentProfile.objects.count() + 1
-        roll_number = f"OJA-2025-{str(count).zfill(3)}"
+        # Create User (no email — mobile is the identity)
+        user = User.objects.create_user(
+            username=mobile,
+            password=password,
+            first_name=first_name,
+            last_name=data.get('last_name', ''),
+        )
 
         # Create Student Profile
         profile = StudentProfile.objects.create(
             user=user,
             gender=data.get('gender', ''),
-            dob=data.get('dob') or None,
-            blood_group=data.get('bloodGroup', ''),
-            father_name=data.get('fatherName', ''),
-            mother_name=data.get('motherName', ''),
-            parent_mobile=data.get('parentMobile', ''),
-            parent_occupation=data.get('parentOccupation', ''),
-            aadhar_number=data.get('aadhar', ''),
-            mobile=data.get('mobile', ''),
-            state=data.get('state', ''),
-            district=data.get('district', ''),
-            city=data.get('city', ''),
-            pincode=data.get('pincode', ''),
+            blood_group=data.get('blood_group', ''),
+            mobile=mobile,
             address=data.get('address', ''),
-            school_name=data.get('schoolName', ''),
-            current_class=data.get('currentClass', ''),
-            board=data.get('board', ''),
-            year_of_passing=data.get('yearOfPassing', ''),
-            tenth_marks=data.get('tenthMarks', ''),
-            puc1_marks=data.get('puc1Marks', ''),
-            puc2_marks=data.get('puc2Marks', ''),
-            previous_coaching=data.get('previousCoaching') == 'Yes',
-            institute_name=data.get('instituteName', ''),
-            neet_attempt_status=data.get('neetAttemptStatus', ''),
-            attempt1_marks=data.get('attempt1Marks', ''),
-            attempt2_marks=data.get('attempt2Marks', ''),
-            program=data.get('courseApplied', ''),
-            hostel_required=data.get('hostelRequired') == 'Yes',
+            current_class=data.get('studying', ''),
             roll_number=roll_number,
             batch='2025-26',
         )
@@ -81,14 +98,7 @@ def register(request):
             'success': True,
             'message': 'Registration successful!',
             'token': token.key,
-            'user': {
-                'id': user.id,
-                'name': user.get_full_name(),
-                'email': user.email,
-                'roll_number': profile.roll_number,
-                'program': profile.program,
-                'batch': profile.batch,
-            }
+            'user': _profile_payload(user, profile),
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
@@ -102,40 +112,38 @@ def register(request):
 @permission_classes([AllowAny])
 def login(request):
     data = request.data
-    email = data.get('email', '')
-    password = data.get('password', '')
+    mobile = (data.get('mobile') or '').strip()
+    password = data.get('password') or ''
+
+    if not mobile or not password:
+        return Response(
+            {'error': 'Mobile Number and Password are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     try:
-        user = User.objects.get(email=email)
-        user = authenticate(username=user.username, password=password)
-        if user:
-            token, _ = Token.objects.get_or_create(user=user)
-            profile = user.profile
-
-            return Response({
-                'success': True,
-                'token': token.key,
-                'user': {
-                    'id': user.id,
-                    'name': user.get_full_name(),
-                    'email': user.email,
-                    'roll_number': profile.roll_number,
-                    'program': profile.program,
-                    'batch': profile.batch,
-                    'mobile': profile.mobile,
-                    'city': profile.city,
-                }
-            })
-        else:
-            return Response(
-                {'error': 'Invalid password'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+        user = User.objects.get(username=mobile)
     except User.DoesNotExist:
         return Response(
-            {'error': 'Email not registered'},
+            {'error': 'Mobile number not registered'},
             status=status.HTTP_404_NOT_FOUND
         )
+
+    authenticated_user = authenticate(username=user.username, password=password)
+    if not authenticated_user:
+        return Response(
+            {'error': 'Invalid password'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    token, _ = Token.objects.get_or_create(user=authenticated_user)
+    profile = authenticated_user.profile
+
+    return Response({
+        'success': True,
+        'token': token.key,
+        'user': _profile_payload(authenticated_user, profile),
+    })
 
 
 @api_view(['GET'])
@@ -143,25 +151,9 @@ def login(request):
 def get_profile(request):
     try:
         profile = request.user.profile
-        return Response({
-            'id': request.user.id,
-            'name': request.user.get_full_name(),
-            'email': request.user.email,
-            'roll_number': profile.roll_number,
-            'program': profile.program,
-            'batch': profile.batch,
-            'mobile': profile.mobile,
-            'city': profile.city,
-            'state': profile.state,
-            'gender': profile.gender,
-            'blood_group': profile.blood_group,
-            'father_name': profile.father_name,
-            'mother_name': profile.mother_name,
-            'school_name': profile.school_name,
-            'current_class': profile.current_class,
-            'hostel_required': profile.hostel_required,
-            'photo': request.build_absolute_uri(profile.photo.url) if profile.photo else None,
-        })
+        payload = _profile_payload(request.user, profile)
+        payload['photo'] = request.build_absolute_uri(profile.photo.url) if profile.photo else None
+        return Response(payload)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -174,7 +166,7 @@ def logout(request):
         return Response({'success': True, 'message': 'Logged out successfully'})
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

@@ -19,13 +19,9 @@ class StudentProfile(models.Model):
         ('VAIDYANATHA', 'VAIDYANATHA'),
     ]
     CLASS_CHOICES = [
-        ('8th', '8th'),
-        ('9th', '9th'),
         ('10th', '10th'),
-        ('1st PUC', '1st PUC'),
-        ('2nd PUC', '2nd PUC'),
-        ('Completed PUC', 'Completed PUC'),
-        ('NEET Repeater', 'NEET Repeater'),
+        ('PUC 1', 'PUC 1'),
+        ('PUC 2', 'PUC 2'),
     ]
 
     # Link to Django User
