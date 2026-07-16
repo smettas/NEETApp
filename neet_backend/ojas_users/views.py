@@ -13,18 +13,7 @@ MOBILE_REGEX = re.compile(r'^[6-9]\d{9}$')
 DATE_FORMAT = '%d/%m/%Y'
 
 
-def _profile_payload(user, profile):
-    return {
-        'id': user.id,
-        'name': user.get_full_name(),
-        'roll_number': profile.roll_number,
-        'mobile': profile.mobile,
-        'gender': profile.gender,
-        'blood_group': profile.blood_group,
-        'studying': profile.current_class,
-        'address': profile.address,
-        'current_class': profile.current_class,
-    }
+        'father_name': profile.father_name,
 
 
 @api_view(['POST'])
@@ -238,7 +227,7 @@ def _parent_visit_payload(visit):
 def parent_visit_requests(request):
     profile = request.user.profile
     if request.method == 'GET':
-        visits = ParentVisitRequest, Notice.objects.filter(student=profile)
+        visits = ParentVisitRequest.objects.filter(student=profile)
         return Response({'requests': [_parent_visit_payload(visit) for visit in visits]})
     data = request.data
     required = ('visit_date', 'visit_time', 'parent_name', 'parent_mobile', 'relation', 'purpose')
