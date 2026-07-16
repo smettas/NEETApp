@@ -13,7 +13,19 @@ MOBILE_REGEX = re.compile(r'^[6-9]\d{9}$')
 DATE_FORMAT = '%d/%m/%Y'
 
 
+def _profile_payload(user, profile):
+    return {
+        'id': user.id,
+        'name': user.get_full_name(),
+        'roll_number': profile.roll_number,
+        'mobile': profile.mobile,
+        'gender': profile.gender,
+        'blood_group': profile.blood_group,
+        'studying': profile.current_class,
+        'address': profile.address,
+        'current_class': profile.current_class,
         'father_name': profile.father_name,
+    }
 
 
 @api_view(['POST'])
