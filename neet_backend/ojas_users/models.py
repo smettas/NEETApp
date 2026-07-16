@@ -69,6 +69,7 @@ class StudentProfile(models.Model):
     roll_number = models.CharField(max_length=20, unique=True, blank=True)
     batch = models.CharField(max_length=20, blank=True)
     is_active = models.BooleanField(default=True)
+    require_password_change = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -78,13 +79,36 @@ class StudentProfile(models.Model):
         verbose_name = 'Student Profile'
         verbose_name_plural = 'Student Profiles'
 
-class Enquiry(models.Model):
-    PROGRAM_CHOICES = [
-        ('AADHYA', 'AADHYA'),
-        ('VISHWANATHA', 'VISHWANATHA'),
-        ('VAIDYANATHA', 'VAIDYANATHA'),
-        ('Not Sure', 'Not Sure'),
+class HomeLeaveRequest(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
     ]
+    
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='home_leave_requests')
+    request_date = models.DateField(auto_now_add=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.TextField()
+    guardian_name = models.CharField(max_length=100)
+    guardian_mobile = models.CharField(max_length=10)
+    guardian_relation = models.CharField(max_length=20)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
+    admin_comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.student.user.get_full_name()} - {self.start_date} to {self.end_date} - {self.status}"
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Home Leave Request'
+        verbose_name_plural = 'Home Leave Requests'
+
+class Enquiry(models.Model):
+    PROGRAM_CHOICES = [('AADHYA', 'AADHYA'), ('VISHWANATHA', 'VISHWANATHA'), ('VAIDYANATHA', 'VAIDYANATHA'), ('Not Sure', 'Not Sure')]
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=10)
     email = models.EmailField(blank=True)
@@ -94,11 +118,41 @@ class Enquiry(models.Model):
     message = models.TextField(blank=True)
     is_contacted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.name} - {self.phone} - {self.program}"
-
+    def __str__(self): return f"{self.name} - {self.phone} - {self.program}"
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Enquiry'
         verbose_name_plural = 'Enquiries'
+
+
+class ParentVisitRequest(models.Model):
+    STATUS_CHOICES = [('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')]
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='parent_visit_requests')
+    visit_date = models.DateField()
+    visit_time = models.CharField(max_length=20)
+    parent_name = models.CharField(max_length=100)
+    parent_mobile = models.CharField(max_length=10)
+    relation = models.CharField(max_length=20)
+    purpose = models.CharField(max_length=100)
+    number_of_visitors = models.PositiveSmallIntegerField(default=1)
+    visiting_message = models.TextField(blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
+    admin_comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Parent Visit Request'
+        verbose_name_plural = 'Parent Visit Requests'
+    def __str__(self): return f"{self.student.user.get_full_name()} - {self.visit_date} - {self.status}"
+
+class Notice(models.Model):
+    CATEGORY_CHOICES = [('Schedule', 'Schedule'), ('Update', 'Update'), ('Notes', 'Notes'), ('Announcement', 'Announcement')]
+    title = models.CharField(max_length=200)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='Announcement')
+    message = models.TextField(blank=True)
+    attachment = models.FileField(upload_to='notices/', blank=True, null=True)
+    published_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    class Meta: ordering = ['-published_at']
+    def __str__(self): return self.title
