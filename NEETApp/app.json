@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "NEETApp",
+    "slug": "NEETApp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F2548"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F2548"
+      },
+      "softwareKeyboardLayoutMode": "pan",
+      "usesCleartextTraffic": true,
+      "package": "com.ojasone.neetapp"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-navigation-bar",
+        {
+          "position": "sticky",
+          "visibility": "hidden",
+          "behavior": "inset-swipe"
+        }
+      ],
+      "expo-web-browser"
+    ],
+    "extra": {
+      "expo-navigation-bar": {
+        "position": "sticky",
+        "visibility": "hidden",
+        "behavior": "inset-swipe"
+      },
+      "eas": {
+        "projectId": "6a915331-5514-44be-bbe2-2c69df706031"
+      }
+    }
+  }
+}
