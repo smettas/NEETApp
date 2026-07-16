@@ -18,8 +18,36 @@ export default function ParentVisitScreen({ navigation }) {
   const loadRequests = useCallback(async () => { setLoading(true); try { const data = await api.getParentVisitRequests(); setRequests(data.requests || []); } catch (error) { Alert.alert('Could not load visits', error.message); } finally { setLoading(false); } }, []);
   useEffect(() => { loadRequests(); }, [loadRequests]);
   const submit = async () => {
-    if (!form.visitDate || !form.visitTime || !form.parentName || !form.parentPhone || !form.relation || !form.purpose) { Alert.alert('Missing Info', 'Please fill all required fields'); return; }
-    try { await api.submitParentVisitRequest({ visit_date: form.visitDate, visit_time: form.visitTime, parent_name: form.parentName, parent_mobile: form.parentPhone, relation: form.relation, purpose: form.purpose, number_of_visitors: form.numberOfVisitors || 1, visiting_message: form.visitingMessage }); await loadRequests(); setActiveTab('history'); setForm({ visitDate: '', visitTime: '', parentName: '', parentPhone: '', relation: '', purpose: '', numberOfVisitors: '', visitingMessage: '' }); } catch (error) { Alert.alert('Booking not submitted', error.message); }
+    if (!form.visitDate || !form.visitTime || !form.parentName || !form.parentPhone || !form.relation || !form.purpose) {
+      Alert.alert('Missing Info', 'Please fill all required fields');
+      return;
+    }
+    try {
+      await api.submitParentVisitRequest({
+        visit_date: form.visitDate,
+        visit_time: form.visitTime,
+        parent_name: form.parentName,
+        parent_mobile: form.parentPhone,
+        relation: form.relation,
+        purpose: form.purpose,
+        number_of_visitors: parseInt(form.numberOfVisitors || 1, 10),
+        visiting_message: form.visitingMessage
+      });
+      await loadRequests();
+      setActiveTab('history');
+      setForm({
+        visitDate: '',
+        visitTime: '',
+        parentName: '',
+        parentPhone: '',
+        relation: '',
+        purpose: '',
+        numberOfVisitors: '',
+        visitingMessage: ''
+      });
+    } catch (error) {
+      Alert.alert('Booking not submitted', error.message);
+    }
   };
   const statusColor = (status) => status === 'approved' ? '#27AE60' : status === 'rejected' ? '#C0392B' : '#C9A227';
   const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);

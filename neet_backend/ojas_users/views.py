@@ -13,17 +13,7 @@ MOBILE_REGEX = re.compile(r'^[6-9]\d{9}$')
 DATE_FORMAT = '%d/%m/%Y'
 
 
-def _profile_payload(user, profile):
-    return {
-        'id': user.id,
-        'name': user.get_full_name(),
-        'roll_number': profile.roll_number,
-        'mobile': profile.mobile,
-        'gender': profile.gender,
-        'blood_group': profile.blood_group,
-        'studying': profile.current_class,
-        'address': profile.address,
-    }
+        'current_class': profile.current_class,
 
 
 @api_view(['POST'])
@@ -262,7 +252,7 @@ def parent_visit_requests(request):
             raise ValueError
     except (TypeError, ValueError):
         return Response({'error': 'Number of visitors must be at least 1'}, status=status.HTTP_400_BAD_REQUEST)
-    visit = ParentVisitRequest, Notice.objects.create(student=profile, visit_date=visit_date, visit_time=data['visit_time'].strip(), parent_name=data['parent_name'].strip(), parent_mobile=mobile, relation=data['relation'].strip(), purpose=data['purpose'].strip(), number_of_visitors=visitor_count, visiting_message=(data.get('visiting_message') or '').strip())
+    visit = ParentVisitRequest.objects.create(student=profile, visit_date=visit_date, visit_time=data['visit_time'].strip(), parent_name=data['parent_name'].strip(), parent_mobile=mobile, relation=data['relation'].strip(), purpose=data['purpose'].strip(), number_of_visitors=visitor_count, visiting_message=(data.get('visiting_message') or '').strip())
     return Response({'success': True, 'request': _parent_visit_payload(visit)}, status=status.HTTP_201_CREATED)
 
 @api_view(['GET'])

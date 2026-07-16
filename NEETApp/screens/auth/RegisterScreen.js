@@ -124,21 +124,21 @@ export default function RegisterScreen({ navigation }) {
     try {
       const response = await api.register(payload);
       console.log('[RegisterScreen] Registration successful:', response);
-      
+
       setLoading(false);
-      
+
       Alert.alert(
         '✅ Successfully Registered!',
         'Your account has been created. Please log in with your mobile number and password.',
-        [{ 
-          text: 'Go to Login', 
-          onPress: () => navigation.replace('Login') 
+        [{
+          text: 'Go to Login',
+          onPress: () => navigation.replace('Login')
         }]
       );
     } catch (error) {
       console.error('[RegisterScreen] Registration failed:', error.message);
       setLoading(false);
-      
+
       Alert.alert(
         'Registration Failed',
         error.message || 'Something went wrong. Please try again.'

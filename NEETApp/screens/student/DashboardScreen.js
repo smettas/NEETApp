@@ -133,11 +133,11 @@ console.log('[DashboardScreen] Displaying:', { studentName, rollNumber, program 
 
 
   const menuItems = [
+    { icon: '📚', label: 'Syllabus & Topics', screen: 'MyCourses', color: '#F3E8FF' },
+    { icon: '📄', label: 'PDF Library', screen: 'PDFLibrary', color: '#FFE8E8' },
     { icon: '📊', label: 'My Results', screen: 'ResultsHome', color: '#EBF3FF' },
     { icon: '📈', label: 'Performance', screen: 'Performance', color: '#E8F8EF' },
     { icon: '📅', label: 'Attendance', screen: 'Attendance', color: '#FFF3E0' },
-    { icon: '📚', label: 'Syllabus & Topics', screen: 'MyCourses', color: '#F3E8FF' },
-    { icon: '📄', label: 'PDF Library', screen: 'PDFLibrary', color: '#FFE8E8' },
     { icon: '🏠', label: 'Home Leave Request', screen: 'HomeLeave', color: '#E8FFF3' },
     { icon: '👨‍👩‍👧', label: 'Parent Visit Booking', screen: 'ParentVisit', color: '#FFF8E8' },
     { icon: '👤', label: 'My Profile', screen: 'StudentProfile', color: '#F0F4FF' },
