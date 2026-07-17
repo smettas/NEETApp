@@ -54,8 +54,23 @@ export default function ProfileScreen({ navigation, user, onLogout }) {
         </View>
       </View>
 
+      {/* STUDENT INFO CARD */}
+      <View style={styles.infoCard}>
+        <Text style={styles.cardTitle}>Student Details</Text>
+        {[
+          { label: 'Roll Number', value: studentInfo.rollNo },
+          { label: 'Mobile', value: studentInfo.phone },
           { label: 'Gender', value: user?.gender || '—' },
           { label: 'Blood Group', value: user?.blood_group || '—' },
+          { label: 'Father Name', value: user?.father_name || '—' },
+          { label: 'Class', value: user?.current_class || '—' },
+        ].map((item, i) => (
+          <View key={i} style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{item.label}</Text>
+            <Text style={styles.infoValue}>{item.value}</Text>
+          </View>
+        ))}
+      </View>
       {/* QUICK MENU */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Access</Text>
