@@ -54,23 +54,7 @@ export default function ProfileScreen({ navigation, user, onLogout }) {
         </View>
       </View>
 
-      {/* STUDENT INFO CARD */}
-      <View style={styles.infoCard}>
-        <Text style={styles.cardTitle}>Student Details</Text>
-        {[
-          { label: 'Roll Number', value: studentInfo.rollNo },
-          { label: 'Mobile', value: studentInfo.phone },
-          { label: 'Gender', value: user?.gender || '—' },
-          { label: 'Blood Group', value: user?.blood_group || '—' },
-          { label: 'Father Name', value: user?.father_name || '—' },
-          { label: 'Class', value: user?.current_class || '—' },
-        ].map((item, i) => (
-          <View key={i} style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{item.label}</Text>
-            <Text style={styles.infoValue}>{item.value}</Text>
-          </View>
-        ))}
-      </View>
+          { label: 'Student Name', value: studentInfo.name },
       {/* QUICK MENU */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Access</Text>
@@ -165,3 +149,4 @@ const styles = StyleSheet.create({
   logoutBtn: { margin: 16, marginTop: 8, padding: 16, borderRadius: 12, borderWidth: 1.5, borderColor: '#FEE2E2', backgroundColor: '#FFF5F5', alignItems: 'center', marginBottom: 40 },
   logoutBtnText: { fontSize: 15, color: '#EF4444', fontWeight: '700' },
 });
+
